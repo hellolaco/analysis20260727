@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Budapesti közéleti megszólalások kereshető és szűrhető gyűjteménye.">
+  <meta name="color-scheme" content="light dark">
+  <title>Kimondva — Budapesti megszólalások</title>
+  <style>
+    :root {
+      --bg: #f5f5f1;
+      --surface: #ffffff;
+      --surface-2: #edeee9;
+      --ink: #17201d;
+      --muted: #68706c;
+      --faint: #969d99;
+      --rule: #d9ddd8;
+      --accent: #e84b31;
+      --accent-ink: #9d2716;
+      --focus: #176b63;
+      --shadow: 0 1px 2px rgba(17, 24, 21, .05), 0 10px 30px rgba(17, 24, 21, .05);
+      --promise: #b56b00;
+      --proposal: #147b72;
+      --position: #286da8;
+      --criticism: #be3f35;
+      --fact: #7753a3;
+      --anecdote: #438250;
+      --response: #6c7175;
+      --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: Iowan Old Style, Charter, Georgia, serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --radius: 16px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #111715;
+      --surface: #19201e;
+      --surface-2: #222a27;
+      --ink: #edf1ee;
+      --muted: #a9b2ad;
+      --faint: #77817c;
+      --rule: #303a36;
+      --accent: #ff6d50;
+      --accent-ink: #ff9d88;
+      --focus: #5fc6b9;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .2), 0 16px 35px rgba(0, 0, 0, .16);
+      --promise: #e2a13b;
+      --proposal: #4cb8ac;
+      --position: #69a5db;
+      --criticism: #ef756b;
+      --fact: #aa8bd1;
+      --anecdote: #7bb684;
+      --response: #aab0b3;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+    :focus-visible { outline: 3px solid color-mix(in srgb, var(--focus) 45%, transparent); outline-offset: 2px; }
+
+    .shell { min-height: 100vh; }
+    .topbar {
+      height: 64px;
+      padding: 0 clamp(18px, 4vw, 56px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--rule);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 50% 50% 50% 8px;
+      background: var(--accent);
+      position: relative;
+      box-shadow: inset 0 0 0 7px color-mix(in srgb, var(--surface) 88%, transparent);
+    }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-button {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--rule);
+      border-radius: 50%;
+      background: var(--surface);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      font-size: 17px;
+    }
+    .icon-button:hover { border-color: var(--faint); transform: translateY(-1px); }
+
+    .hero {
+      padding: clamp(54px, 9vw, 112px) clamp(18px, 4vw, 56px) 44px;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+    .kicker {
+      margin: 0 0 16px;
+      font: 700 11px/1 var(--mono);
+      color: var(--accent-ink);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 920px;
+      font: 500 clamp(46px, 7.2vw, 96px)/.94 var(--serif);
+      letter-spacing: -.055em;
+      margin: 0;
+    }
+    .hero-line { color: var(--accent); }
+    .hero-bottom {
+      display: grid;
+      grid-template-columns: minmax(280px, 620px) 1fr;
+      gap: 42px;
+      margin-top: 34px;
+      align-items: end;
+    }
+    .lede {
+      font-size: clamp(17px, 2vw, 21px);
+      line-height: 1.55;
+      color: var(--muted);
+      margin: 0;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--rule);
+      padding-top: 18px;
+      gap: 20px;
+    }
+    .stat-value { display: block; font-size: clamp(24px, 3vw, 35px); font-weight: 750; letter-spacing: -.04em; }
+    .stat-label { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    .search-stage {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 0 clamp(18px, 4vw, 56px) 32px;
+    }
+    .search-box {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 20px;
+      padding: 10px 10px 10px 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: var(--shadow);
+    }
+    .search-symbol { color: var(--muted); font-size: 20px; }
+    #search {
+      min-width: 0;
+      flex: 1;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: clamp(17px, 2vw, 20px);
+      padding: 13px 0;
+    }
+    #search::placeholder { color: var(--faint); }
+    .shortcut {
+      border: 1px solid var(--rule);
+      border-bottom-width: 2px;
+      border-radius: 7px;
+      color: var(--muted);
+      font: 11px var(--mono);
+      padding: 6px 9px;
+      background: var(--surface-2);
+    }
+    .clear-search {
+      display: none;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .clear-search.show { display: block; }
+
+    .workspace {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 0 clamp(18px, 4vw, 56px) 100px;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: clamp(28px, 4vw, 58px);
+      align-items: start;
+    }
+    .filters {
+      position: sticky;
+      top: 92px;
+      max-height: calc(100vh - 112px);
+      overflow: auto;
+      scrollbar-width: thin;
+      padding-right: 4px;
+    }
+    .filter-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+    .filter-head h2 { font-size: 14px; margin: 0; letter-spacing: -.01em; }
+    .text-button {
+      border: 0;
+      background: transparent;
+      color: var(--accent-ink);
+      font-size: 12px;
+      padding: 4px;
+    }
+    .filter-group { border-top: 1px solid var(--rule); padding: 20px 0; }
+    .filter-label {
+      display: block;
+      font: 700 10px/1 var(--mono);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .type-list { display: grid; gap: 5px; }
+    .type-filter {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      display: grid;
+      grid-template-columns: 10px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      text-align: left;
+      padding: 9px 10px;
+    }
+    .type-filter:hover { background: var(--surface-2); color: var(--ink); }
+    .type-filter.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 0 var(--rule); }
+    .type-dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+    .type-count { font: 11px var(--mono); color: var(--faint); }
+    .field {
+      width: 100%;
+      appearance: none;
+      border: 1px solid var(--rule);
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: 10px;
+      padding: 11px 34px 11px 12px;
+      font-size: 13px;
+      background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+      background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+    .check-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .check-row input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+    .results { min-width: 0; }
+    .results-toolbar {
+      min-height: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+    }
+    .results-count { font-size: 14px; color: var(--muted); }
+    .results-count strong { color: var(--ink); font-weight: 750; }
+    .sort-wrap { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+    #sort { width: auto; min-width: 150px; padding-top: 8px; padding-bottom: 8px; }
+    .active-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 16px; }
+    .active-pill {
+      border: 1px solid var(--rule);
+      background: var(--surface);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 11px;
+    }
+    .active-pill:hover { color: var(--ink); border-color: var(--faint); }
+
+    .result-list { display: grid; gap: 12px; }
+    .card {
+      --type-color: var(--position);
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    .card:hover { border-color: color-mix(in srgb, var(--type-color) 38%, var(--rule)); box-shadow: var(--shadow); }
+    .card[open] { border-color: color-mix(in srgb, var(--type-color) 48%, var(--rule)); }
+    .card summary {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 5px minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: stretch;
+      cursor: pointer;
+      padding: 0;
+    }
+    .card summary::-webkit-details-marker { display: none; }
+    .card-accent { background: var(--type-color); }
+    .card-main { padding: 21px 0 20px; }
+    .card-topline { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-bottom: 10px; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 23px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font: 700 9px/1 var(--mono);
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      background: color-mix(in srgb, var(--type-color) 10%, transparent);
+      color: var(--type-color);
+    }
+    .tag.neutral { color: var(--muted); background: var(--surface-2); }
+    .card-title {
+      margin: 0;
+      font: 600 clamp(18px, 2.3vw, 23px)/1.25 var(--serif);
+      letter-spacing: -.018em;
+      text-wrap: pretty;
+    }
+    .preview {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    mark { background: color-mix(in srgb, #ffd84d 55%, transparent); color: inherit; border-radius: 2px; padding: 0 1px; }
+    .card-side {
+      min-width: 92px;
+      padding: 20px 18px 18px 4px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      gap: 10px;
+      color: var(--muted);
+    }
+    .occurrence-count { font: 11px var(--mono); white-space: nowrap; margin-top: 3px; }
+    .chevron {
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--rule);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      transition: transform .18s ease;
+    }
+    .card[open] .chevron { transform: rotate(45deg); }
+    .card-body { border-top: 1px solid var(--rule); padding: 0 24px 24px 29px; }
+    .occurrence { padding: 24px 0; border-bottom: 1px solid var(--rule); }
+    .occurrence:last-child { border-bottom: 0; padding-bottom: 4px; }
+    blockquote {
+      margin: 0;
+      max-width: 900px;
+      font: 400 clamp(17px, 2vw, 21px)/1.55 var(--serif);
+      color: var(--ink);
+    }
+    .context { margin: 14px 0 0; max-width: 850px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .provenance {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px 14px;
+      color: var(--muted);
+      font: 10px/1.4 var(--mono);
+    }
+    .source-name { max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .warning { color: var(--criticism); border: 1px solid color-mix(in srgb, var(--criticism) 30%, transparent); padding: 3px 7px; border-radius: 999px; }
+
+    .empty {
+      border: 1px dashed var(--rule);
+      border-radius: var(--radius);
+      padding: 70px 24px;
+      text-align: center;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--surface) 55%, transparent);
+    }
+    .empty strong { display: block; color: var(--ink); font: 600 24px var(--serif); margin-bottom: 8px; }
+    .load-more {
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--ink);
+      font-weight: 650;
+    }
+    .load-more:hover { border-color: var(--faint); transform: translateY(-1px); box-shadow: var(--shadow); }
+    .loading {
+      min-height: 55vh;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+    }
+    .loader {
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 3px solid var(--rule); border-top-color: var(--accent);
+      animation: spin .8s linear infinite; margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 28px clamp(18px, 4vw, 56px) 42px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    footer span:last-child { font-family: var(--mono); }
+
+    @media (max-width: 900px) {
+      .hero-bottom { grid-template-columns: 1fr; }
+      .workspace { grid-template-columns: 1fr; }
+      .filters {
+        position: static;
+        max-height: none;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 22px;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        padding: 18px;
+      }
+      .filter-head { grid-column: 1 / -1; }
+      .filter-group { padding: 16px 0; }
+      .type-group { grid-column: 1 / -1; }
+      .type-list { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 620px) {
+      .topbar { height: 56px; }
+      .hero { padding-top: 44px; }
+      .hero-bottom { margin-top: 24px; }
+      .stats { gap: 10px; }
+      .stat-label { font-size: 10px; }
+      .search-box { padding-left: 15px; border-radius: 15px; }
+      .shortcut { display: none; }
+      .filters { grid-template-columns: 1fr; }
+      .filter-head, .type-group { grid-column: auto; }
+      .type-list { grid-template-columns: 1fr 1fr; }
+      .results-toolbar { align-items: flex-start; flex-direction: column; gap: 12px; }
+      .sort-wrap { width: 100%; }
+      #sort { flex: 1; }
+      .card summary { grid-template-columns: 4px minmax(0, 1fr) auto; gap: 14px; }
+      .card-main { padding: 17px 0; }
+      .card-side { min-width: 46px; padding-right: 12px; }
+      .occurrence-count { display: none; }
+      .card-body { padding: 0 18px 20px 22px; }
+      .preview { -webkit-line-clamp: 3; }
+      footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>KIMONDVA</span></div>
+      <div class="top-actions">
+        <button class="icon-button" id="themeToggle" aria-label="Színtéma váltása" title="Színtéma váltása">◐</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="kicker">Budapest · nyilvános megszólalások</p>
+        <h1>A városról <span class="hero-line">kimondott</span> szavak.</h1>
+        <div class="hero-bottom">
+          <p class="lede">Ígéretek, álláspontok, kritikák és tényállítások — egy helyen, kereshetően, az eredeti forrásig visszakövethetően.</p>
+          <div class="stats" aria-label="Gyűjtemény statisztikái">
+            <div><span class="stat-value" id="statQuotes">—</span><span class="stat-label">idézet</span></div>
+            <div><span class="stat-value" id="statSources">—</span><span class="stat-label">forrás</span></div>
+            <div><span class="stat-value" id="statThemes">—</span><span class="stat-label">téma</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="search-stage" aria-label="Keresés">
+        <div class="search-box">
+          <span class="search-symbol" aria-hidden="true">⌕</span>
+          <input id="search" type="search" autocomplete="off" placeholder="Keressen témára, idézetre vagy forrásra…" aria-label="Keresés a gyűjteményben">
+          <button class="clear-search" id="clearSearch" aria-label="Keresés törlése">✕</button>
+          <span class="shortcut" aria-hidden="true">/</span>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <aside class="filters" aria-label="Szűrők">
+          <div class="filter-head">
+            <h2>Szűkítés</h2>
+            <button class="text-button" id="resetFilters">Alaphelyzet</button>
+          </div>
+          <div class="filter-group type-group">
+            <span class="filter-label">Megszólalás típusa</span>
+            <div class="type-list" id="typeFilters"></div>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label" for="areaFilter">Tématerület</label>
+            <select class="field" id="areaFilter"><option value="">Minden tématerület</option></select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label" for="sourceFilter">Forrás</label>
+            <select class="field" id="sourceFilter"><option value="">Minden forrás</option></select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label" for="batchFilter">Adatcsomag</label>
+            <select class="field" id="batchFilter"><option value="">Minden adatcsomag</option></select>
+          </div>
+          <div class="filter-group">
+            <label class="check-row"><input type="checkbox" id="reviewFilter"> Csak ellenőrzendő tételek</label>
+          </div>
+        </aside>
+
+        <section class="results" aria-live="polite">
+          <div class="results-toolbar">
+            <div class="results-count" id="resultsCount">Adatok betöltése…</div>
+            <label class="sort-wrap">Rendezés
+              <select class="field" id="sort">
+                <option value="relevance">Relevancia</option>
+                <option value="newest">Legújabb elöl</option>
+                <option value="oldest">Legrégebbi elöl</option>
+                <option value="frequency">Legtöbb előfordulás</option>
+                <option value="alphabetical">Betűrend</option>
+              </select>
+            </label>
+          </div>
+          <div class="active-filters" id="activeFilters"></div>
+          <div id="resultList" class="result-list">
+            <div class="loading"><div><div class="loader"></div>Gyűjtemény betöltése…</div></div>
+          </div>
+          <button class="load-more" id="loadMore" hidden>További találatok</button>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <span>Nyilvános megszólalások kutatható archívuma.</span>
+      <span id="footerMeta">Adatok betöltése…</span>
+    </footer>
+  </div>
+
+  <script>
+    const TYPE_ORDER = ["PROMISE", "PROPOSAL", "POSITION", "CRITICISM", "FACT-CLAIM", "ANECDOTE", "RESPONSE"];
+    const TYPE_COLORS = {
+      "PROMISE": "var(--promise)", "PROPOSAL": "var(--proposal)", "POSITION": "var(--position)",
+      "CRITICISM": "var(--criticism)", "FACT-CLAIM": "var(--fact)",
+      "ANECDOTE": "var(--anecdote)", "RESPONSE": "var(--response)"
+    };
+    const PAGE_SIZE = 36;
+    const state = {
+      data: null, query: "", type: "", area: "", source: "", batch: "",
+      review: false, sort: "relevance", visible: PAGE_SIZE, filtered: []
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const els = {
+      search: $("#search"), clearSearch: $("#clearSearch"), types: $("#typeFilters"),
+      area: $("#areaFilter"), source: $("#sourceFilter"), batch: $("#batchFilter"),
+      review: $("#reviewFilter"), sort: $("#sort"), results: $("#resultList"),
+      count: $("#resultsCount"), active: $("#activeFilters"), more: $("#loadMore")
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, ch => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      })[ch]);
+    }
+
+    function normalize(value) {
+      return String(value ?? "").toLocaleLowerCase("hu").normalize("NFKD")
+        .replace(/\p{M}/gu, "").replace(/\s+/g, " ").trim();
+    }
+
+    function highlight(value) {
+      const text = escapeHtml(value);
+      const q = state.query.trim();
+      if (!q || q.length < 2) return text;
+      const terms = q.split(/\s+/).filter(Boolean).slice(0, 6).map(term =>
+        term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+      );
+      if (!terms.length) return text;
+      return text.replace(new RegExp(`(${terms.join("|")})`, "giu"), "<mark>$1</mark>");
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat("hu-HU").format(value || 0);
+    }
+
+    function typeLabel(type) {
+      return state.data?.clusters.find(c => c.type === type)?.type_label_hu || type;
+    }
+
+    function dateValue(cluster, newest = true) {
+      const dates = cluster.occurrences.map(o => /^\d{4}-\d{2}-\d{2}$/.test(o.date) ? o.date : null).filter(Boolean).sort();
+      return newest ? (dates.at(-1) || "") : (dates[0] || "9999-99-99");
+    }
+
+    function buildSearchIndex(cluster) {
+      return normalize([
+        cluster.idea_summary_hu, cluster.type_label_hu, cluster.area,
+        ...cluster.occurrences.flatMap(o => [o.quote_hu, o.context_hu, o.source_file, o.date, o.batch])
+      ].join(" "));
+    }
+
+    function option(value, label) {
+      return `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`;
+    }
+
+    function initializeControls() {
+      const clusters = state.data.clusters;
+      const typeCounts = Object.fromEntries(TYPE_ORDER.map(type => [type, clusters.filter(c => c.type === type).length]));
+      els.types.innerHTML = TYPE_ORDER.filter(type => typeCounts[type]).map(type => `
+        <button class="type-filter" data-type="${type}" style="color:${TYPE_COLORS[type]}" aria-pressed="false">
+          <span class="type-dot"></span><span>${escapeHtml(typeLabel(type))}</span><span class="type-count">${formatNumber(typeCounts[type])}</span>
+        </button>`).join("");
+
+      const areas = [...new Set(clusters.map(c => c.area).filter(Boolean))].sort((a, b) => a.localeCompare(b, "hu"));
+      const sources = [...new Set(clusters.flatMap(c => c.occurrences.map(o => o.source_file)).filter(Boolean))].sort((a, b) => a.localeCompare(b, "hu"));
+      const batches = [...new Set(clusters.flatMap(c => c.occurrences.map(o => o.batch)).filter(Boolean))].sort();
+      els.area.innerHTML = option("", "Minden tématerület") + areas.map(x => option(x, x)).join("");
+      els.source.innerHTML = option("", "Minden forrás") + sources.map(x => option(x, x.replace(/\.srt$/i, ""))).join("");
+      els.batch.innerHTML = option("", "Minden adatcsomag") + batches.map(x => option(x, x)).join("");
+    }
+
+    function readUrlState() {
+      const p = new URLSearchParams(location.search);
+      state.query = p.get("q") || "";
+      state.type = p.get("type") || "";
+      state.area = p.get("area") || "";
+      state.source = p.get("source") || "";
+      state.batch = p.get("batch") || "";
+      state.review = p.get("review") === "1";
+      state.sort = p.get("sort") || "relevance";
+      els.search.value = state.query;
+      els.area.value = state.area;
+      els.source.value = state.source;
+      els.batch.value = state.batch;
+      els.review.checked = state.review;
+      els.sort.value = state.sort;
+      updateTypeButtons();
+      updateClearButton();
+    }
+
+    function writeUrlState() {
+      const p = new URLSearchParams();
+      if (state.query) p.set("q", state.query);
+      if (state.type) p.set("type", state.type);
+      if (state.area) p.set("area", state.area);
+      if (state.source) p.set("source", state.source);
+      if (state.batch) p.set("batch", state.batch);
+      if (state.review) p.set("review", "1");
+      if (state.sort !== "relevance") p.set("sort", state.sort);
+      history.replaceState(null, "", `${location.pathname}${p.size ? "?" + p : ""}${location.hash}`);
+    }
+
+    function updateTypeButtons() {
+      document.querySelectorAll(".type-filter").forEach(button => {
+        const active = button.dataset.type === state.type;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+    }
+
+    function updateClearButton() {
+      els.clearSearch.classList.toggle("show", Boolean(state.query));
+    }
+
+    function applyFilters() {
+      if (!state.data) return;
+      const q = normalize(state.query);
+      let rows = state.data.clusters.filter(cluster => {
+        if (state.type && cluster.type !== state.type) return false;
+        if (state.area && cluster.area !== state.area) return false;
+        if (state.source && !cluster.occurrences.some(o => o.source_file === state.source)) return false;
+        if (state.batch && !cluster.occurrences.some(o => o.batch === state.batch)) return false;
+        if (state.review && !cluster.occurrences.some(o => o.low_confidence_speaker || o.boundary_reviewed)) return false;
+        if (q && !cluster._search.includes(q) && !q.split(" ").every(term => cluster._search.includes(term))) return false;
+        return true;
+      });
+
+      rows.sort((a, b) => {
+        if (state.sort === "newest") return dateValue(b).localeCompare(dateValue(a));
+        if (state.sort === "oldest") return dateValue(a, false).localeCompare(dateValue(b, false));
+        if (state.sort === "frequency") return b.occurrences.length - a.occurrences.length || a.idea_summary_hu.localeCompare(b.idea_summary_hu, "hu");
+        if (state.sort === "alphabetical") return a.idea_summary_hu.localeCompare(b.idea_summary_hu, "hu");
+        if (q) {
+          const aq = normalize(a.idea_summary_hu).includes(q) ? 1 : 0;
+          const bq = normalize(b.idea_summary_hu).includes(q) ? 1 : 0;
+          if (aq !== bq) return bq - aq;
+        }
+        return TYPE_ORDER.indexOf(a.type) - TYPE_ORDER.indexOf(b.type);
+      });
+
+      state.filtered = rows;
+      state.visible = PAGE_SIZE;
+      writeUrlState();
+      render();
+    }
+
+    function occurrenceHtml(o) {
+      const flags = [
+        o.low_confidence_speaker ? `<span class="warning">beszélő ellenőrzendő</span>` : "",
+        o.boundary_reviewed ? `<span class="warning">felülvizsgált határeset</span>` : ""
+      ].join("");
+      return `<article class="occurrence">
+        <blockquote>„${highlight(o.quote_hu)}”</blockquote>
+        <p class="context">${highlight(o.context_hu)}</p>
+        <div class="provenance">
+          <span class="source-name" title="${escapeHtml(o.source_file)}">${escapeHtml(o.source_file)}</span>
+          <span>${escapeHtml(o.date)}</span>
+          <span>@ ${escapeHtml(o.timecode)}</span>
+          <span>${escapeHtml(o.speaker_label)}</span>
+          <span>${escapeHtml(o.batch)}</span>${flags}
+        </div>
+      </article>`;
+    }
+
+    function cardHtml(cluster) {
+      const first = cluster.occurrences[0];
+      const countLabel = `${cluster.occurrences.length} előfordulás`;
+      return `<details class="card" id="${escapeHtml(cluster.idea_id)}" style="--type-color:${TYPE_COLORS[cluster.type] || "var(--position)"}">
+        <summary>
+          <span class="card-accent"></span>
+          <div class="card-main">
+            <div class="card-topline">
+              <span class="tag">${escapeHtml(cluster.type_label_hu)}</span>
+              <span class="tag neutral">${escapeHtml(cluster.area)}</span>
+            </div>
+            <h3 class="card-title">${highlight(cluster.idea_summary_hu)}</h3>
+            <p class="preview">„${highlight(first.quote_hu)}”</p>
+          </div>
+          <div class="card-side"><span class="occurrence-count">${countLabel}</span><span class="chevron" aria-hidden="true">+</span></div>
+        </summary>
+        <div class="card-body">${cluster.occurrences.map(occurrenceHtml).join("")}</div>
+      </details>`;
+    }
+
+    function activeFilterHtml(key, label) {
+      return `<button class="active-pill" data-clear="${key}">${escapeHtml(label)} ×</button>`;
+    }
+
+    function renderActiveFilters() {
+      const pills = [];
+      if (state.query) pills.push(activeFilterHtml("query", `Keresés: ${state.query}`));
+      if (state.type) pills.push(activeFilterHtml("type", typeLabel(state.type)));
+      if (state.area) pills.push(activeFilterHtml("area", state.area));
+      if (state.source) pills.push(activeFilterHtml("source", state.source.replace(/\.srt$/i, "")));
+      if (state.batch) pills.push(activeFilterHtml("batch", state.batch));
+      if (state.review) pills.push(activeFilterHtml("review", "Ellenőrzendő"));
+      els.active.innerHTML = pills.join("");
+    }
+
+    function render() {
+      const total = state.filtered.length;
+      const occurrenceTotal = state.filtered.reduce((sum, c) => sum + c.occurrences.length, 0);
+      els.count.innerHTML = `<strong>${formatNumber(total)}</strong> téma · ${formatNumber(occurrenceTotal)} idézet`;
+      renderActiveFilters();
+      if (!total) {
+        els.results.innerHTML = `<div class="empty"><strong>Nincs találat</strong>Próbáljon más keresőkifejezést, vagy töröljön néhány szűrőt.</div>`;
+        els.more.hidden = true;
+        return;
+      }
+      els.results.innerHTML = state.filtered.slice(0, state.visible).map(cardHtml).join("");
+      els.more.hidden = state.visible >= total;
+      els.more.textContent = `További találatok · ${formatNumber(total - state.visible)}`;
+      if (location.hash) {
+        const target = document.getElementById(location.hash.slice(1));
+        if (target) target.open = true;
+      }
+    }
+
+    function resetFilters() {
+      Object.assign(state, { query: "", type: "", area: "", source: "", batch: "", review: false, sort: "relevance" });
+      els.search.value = "";
+      els.area.value = "";
+      els.source.value = "";
+      els.batch.value = "";
+      els.review.checked = false;
+      els.sort.value = "relevance";
+      updateTypeButtons();
+      updateClearButton();
+      applyFilters();
+    }
+
+    let searchTimer;
+    els.search.addEventListener("input", event => {
+      state.query = event.target.value.trim();
+      updateClearButton();
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(applyFilters, 140);
+    });
+    els.clearSearch.addEventListener("click", () => {
+      state.query = ""; els.search.value = ""; updateClearButton(); applyFilters(); els.search.focus();
+    });
+    els.types.addEventListener("click", event => {
+      const button = event.target.closest(".type-filter");
+      if (!button) return;
+      state.type = state.type === button.dataset.type ? "" : button.dataset.type;
+      updateTypeButtons(); applyFilters();
+    });
+    els.area.addEventListener("change", e => { state.area = e.target.value; applyFilters(); });
+    els.source.addEventListener("change", e => { state.source = e.target.value; applyFilters(); });
+    els.batch.addEventListener("change", e => { state.batch = e.target.value; applyFilters(); });
+    els.review.addEventListener("change", e => { state.review = e.target.checked; applyFilters(); });
+    els.sort.addEventListener("change", e => { state.sort = e.target.value; applyFilters(); });
+    els.more.addEventListener("click", () => { state.visible += PAGE_SIZE; render(); });
+    $("#resetFilters").addEventListener("click", resetFilters);
+    els.active.addEventListener("click", event => {
+      const button = event.target.closest("[data-clear]");
+      if (!button) return;
+      const key = button.dataset.clear;
+      if (key === "query") { state.query = ""; els.search.value = ""; updateClearButton(); }
+      else if (key === "review") { state.review = false; els.review.checked = false; }
+      else { state[key] = ""; if (els[key]) els[key].value = ""; }
+      updateTypeButtons(); applyFilters();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "/" && document.activeElement !== els.search) { event.preventDefault(); els.search.focus(); }
+      if (event.key === "Escape" && document.activeElement === els.search && state.query) {
+        state.query = ""; els.search.value = ""; updateClearButton(); applyFilters();
+      }
+    });
+
+    const preferredTheme = localStorage.getItem("kimondva-theme");
+    if (preferredTheme) document.documentElement.dataset.theme = preferredTheme;
+    $("#themeToggle").addEventListener("click", () => {
+      const dark = document.documentElement.dataset.theme === "dark";
+      document.documentElement.dataset.theme = dark ? "light" : "dark";
+      localStorage.setItem("kimondva-theme", dark ? "light" : "dark");
+    });
+
+    async function loadData() {
+      try {
+        const response = await fetch("./ideas-data.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        state.data = await response.json();
+        if (!Array.isArray(state.data.clusters)) throw new Error("Hibás adatformátum");
+        state.data.clusters.forEach(cluster => { cluster._search = buildSearchIndex(cluster); });
+        $("#statQuotes").textContent = formatNumber(state.data.published_occurrences_count);
+        $("#statSources").textContent = formatNumber(state.data.source_files_count);
+        $("#statThemes").textContent = formatNumber(state.data.clusters.length);
+        $("#footerMeta").textContent = `${state.data.generated_at} · ${formatNumber(state.data.source_files_count)} forrás · ${formatNumber(state.data.published_occurrences_count)} idézet`;
+        initializeControls();
+        readUrlState();
+        applyFilters();
+      } catch (error) {
+        els.count.textContent = "Betöltési hiba";
+        els.results.innerHTML = `<div class="empty"><strong>Az adatok nem tölthetők be</strong>Az ideas-data.json fájlnak ugyanabban a webes mappában kell lennie.<br><small>${escapeHtml(error.message)}</small></div>`;
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
